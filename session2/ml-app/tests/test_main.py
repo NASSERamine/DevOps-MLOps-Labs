@@ -1,33 +1,42 @@
 import pytest
-import os
+import numpy as np
+import pandas as pd
+from data_loader import (
+    load_iris_data,
+    get_feature_names,
+    get_target_names,
+    load_iris_as_dataframe,
+    get_dataset_info
+)
 
-def test_src_directory_exists():
-    """
-    Vérifie que le répertoire 'src' existe.
-    """
-    # '..' remonte d'un niveau (de /tests à la racine du projet)
-    project_root = os.path.dirname(os.path.dirname(__file__))
-    src_path = os.path.join(project_root, 'src')
-    
-    assert os.path.exists(src_path), "Le dossier 'src' est manquant"
-    assert os.path.isdir(src_path), "Le chemin 'src' n'est pas un dossier"
 
-def test_train_script_exists():
-    """
-    Vérifie que le script d'entraînement 'src/train.py' existe.
-    """
-    project_root = os.path.dirname(os.path.dirname(__file__))
-    train_script_path = os.path.join(project_root, 'src', 'train.py')
-    
-    assert os.path.exists(train_script_path), "Le script 'src/train.py' est manquant"
-    assert os.path.isfile(train_script_path), "Le chemin 'src/train.py' n'est pas un fichier"
+class TestDataFormatValidation:
 
-def test_requirements_file_exists():
-    """
-    Vérifie que le fichier 'requirements.txt' existe à la racine.
-    """
-    project_root = os.path.dirname(os.path.dirname(__file__))
-    req_path = os.path.join(project_root, 'requirements.txt')
-    
-    assert os.path.exists(req_path), "Le fichier 'requirements.txt' est manquant à la racine"
-    assert os.path.isfile(req_path), "Le chemin 'requirements.txt' n'est pas un fichier"
+    def test_load_iris_data_returns_correct_types(self):
+        X_train, X_test, y_train, y_test = load_iris_data()
+        
+        assert isinstance(X_train, np.ndarray)
+        assert isinstance(X_test, np.ndarray)
+        assert isinstance(y_train, np.ndarray)
+        assert isinstance(y_test, np.ndarray)
+
+    def test_load_iris_data_shapes(self):
+        X_train, X_test, y_train, y_test = load_iris_data(test_size=0.2, random_state=42)
+        
+        assert X_train.shape[1] == 4
+        assert X_test.shape[1] == 4
+        assert len(y_train.shape) == 1
+        assert len(y_test.shape) == 1
+        assert X_train.shape[0] == y_train.shape[0]
+        assert X_test.shape[0] == y_test.shape[0]
+
+
+    def test_load_iris_data_no_missing_values(self):
+        X_train, X_test, y_train, y_test = load_iris_data()
+        
+        assert not np.isnan(X_train).any()
+        assert not np.isnan(X_test).any()
+        assert not np.isnan(y_train).any()
+        assert not np.isnan(y_test).any()
+        assert not np.isinf(X_train).any()
+        assert not np.isinf(X_test).any()
