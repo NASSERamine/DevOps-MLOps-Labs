@@ -55,3 +55,31 @@ Preuve d'exécution (Prédiction) : Cette capture d'écran montre la sortie de p
 (Fin de la section pour la Tâche 2)
 
 Vous pouvez maintenant continuer avec la Tâche 3 (Tests unitaires). Vous pouvez ajouter une nouvelle section à ce fichier dès que vous l'aurez terminée.
+
+
+
+---
+
+## 🐳 Tâche 6 : Conteneuriser l'application (Dockerfile)
+
+La dernière étape consistait à conteneuriser l'application à l'aide de Docker pour garantir un environnement d'exécution cohérent.
+
+### 1. Création du Dockerfile
+
+J'ai créé un `Dockerfile` à la racine du projet. Ce fichier utilise une image de base `python:3.9-slim`, configure le répertoire de travail, installe les dépendances de `requirements.txt`, crée le dossier `models` et copie le code source de l'application.
+
+La commande finale est définie avec `CMD ["python", "src/train.py"]`, ce qui permet au conteneur d'exécuter le script d'entraînement par défaut.
+
+### 2. Construction de l'image (Build)
+
+J'ai construit l'image localement en utilisant la commande `sudo docker build -t ml-app .`. Le processus a empaqueté l'application et ses dépendances dans une image nommée `ml-app`.
+
+**Preuve de construction (Build) :**
+> (Insérez ici votre capture d'écran `image_a62e7c.jpg` - celle qui montre le `[+] Building... FINISHED`)
+
+### 3. Exécution du conteneur (Run)
+
+Pour valider l'image, j'ai exécuté l'entraînement à l'intérieur du conteneur via la commande `sudo docker run ml-app`. Le conteneur s'est lancé, a exécuté le script `src/train.py` et a affiché la sortie de l'entraînement (Accuracy: 0.9667), confirmant que l'application est correctement conteneurisée.
+
+**Preuve d'exécution (Run) :**
+> (Insérez ici votre nouvelle capture d'écran `image_a62f57.png` - celle que vous venez de m'envoyer)
