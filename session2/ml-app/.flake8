@@ -1,0 +1,11 @@
+[flake8]
+# Ignorer les dossiers que nous ne voulons pas vérifier
+exclude = 
+    .venv,
+    .github,
+    __pycache__,
+    build
+
+# Ignorer des erreurs spécifiques. E501 = "ligne trop longue"
+# C'est utile pour démarrer sans être submergé
+ignore = E501

@@ -1,0 +1,81 @@
+name: CI Pipeline (Test, Lint, Build)
+
+# Tâche 5.1: Déclenche le workflow sur les push et les pull requests
+# vers la branche 'main'.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    # Exécute le job sur la dernière version d'Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      # Tâche 5.2 (Étape 1): Récupère votre code (checkout)
+      - name: 1. Checkout code
+        uses: actions/checkout@v4
+
+      # Tâche 5.2 (Étape 2): Configure l'environnement Python 3.11
+      - name: 2. Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          # Met en cache les dépendances pour accélérer les futurs builds
+          cache: 'pip'
+
+      # Tâche 5.2 (Étape 3): Installe les dépendances
+      - name: 3. Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          # Installe aussi les dépendances de dev (test et lint)
+          pip install flake8 pytest
+
+      # Tâche 5.2 (Étape 4): Exécute le linter (flake8)
+      # Le build échouera si le linting trouve des erreurs
+      - name: 4. Run linter (flake8)
+        run: flake8 .
+
+      # Tâche 5.2 (Étape 5): Exécute les tests (pytest)
+      # --junitxml génère un rapport de test que nous pouvons archiver
+      - name: 5. Run tests (pytest)
+        run: pytest --junitxml=pytest-results.xml
+
+      # Tâche 5.2 (Étape 5 - suite): Télécharge les résultats des tests
+      # 'if: always()' garantit que les résultats sont uploadés
+      # même si l'étape de test a échoué, pour nous permettre de déboguer.
+      - name: 6. Upload test results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: pytest-results.xml
+        if: always()
+
+      # --- Section Docker (Tâche 5.2, Étape 6) ---
+
+      # Prépare l'outil de build Docker
+      - name: 7. Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Tâche 5.2 (Étape 6): Construit l'image Docker
+      # 'push: false' signifie que nous la construisons sans la pousser vers un registre
+      # 'outputs: type=docker,dest=...' sauvegarde l'image en tant que fichier .tar
+      - name: 8. Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: my-app:latest
+          outputs: type=docker,dest=/tmp/my-image.tar
+
+      # Tâche 5.2 (Étape 6 - suite): Télécharge l'image Docker (.tar)
+      # C'est l'artefact de l'image demandé par le devoir.
+      - name: 9. Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/my-image.tar
